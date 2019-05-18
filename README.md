@@ -36,13 +36,6 @@ Will be filled
 * [R Programming Language](https://www.r-project.org/about.html) Language and environment for statistical computing and graphics.
 
 
-
-## Authors
-
-* **Baris Bayramoglu** - *Initial work* - [brspower](https://github.com/brspower)
-* **Oguz Ozan** - *Initial work* - [ozokwo](https://github.com/ozokwo)
-
-
 ## License
 
 This project is licensed under the MIT License

@@ -1,4 +1,12 @@
-library(FNN)
+#libraries needed
+library(caret)
+library(class)
+library(dplyr)
+library(e1071)
+library(FNN) 
+library(gmodels) 
+library(psych)
+
 
 diamonds <- read.csv("diamonds.csv")
 
@@ -45,3 +53,48 @@ print(mean((price_outcome_test - reg_results$pred) ^ 2))
 #mean absolute error
 print("Mean Absolute error")
 print(mean(abs(price_outcome_test - reg_results$pred)))
+
+rmse = function(actual, predicted) {
+  sqrt(mean((actual - predicted) ^ 2))
+}
+
+# define helper function for getting knn.reg predictions
+# note: this function is highly specific to this situation and dataset
+make_knn_pred = function(k = 1, training, predicting, price_outcome_test, price_outcome_train) {
+  pred = knn.reg(train = training, test = predicting, price_outcome_train, k = k)$pred
+  act  = price_outcome_test
+  rmse(predicted = pred, actual = act)
+}
+
+k = c(1, 5, 10, 25, 50, 250)
+
+# get requested train RMSEs
+knn_trn_rmse = sapply(k, make_knn_pred, 
+                      training = reg_pred_train, 
+                      predicting = reg_pred_train,
+                      price_outcome_train = price_outcome_train,
+                      price_outcome_test = price_outcome_test)
+# get requested test RMSEs
+knn_tst_rmse = sapply(k, make_knn_pred, 
+                            training = reg_pred_train, 
+                            predicting = reg_pred_test,
+                            price_outcome_train = price_outcome_train,
+                            price_outcome_test = price_outcome_test)
+
+# determine "best" k
+best_k = k[which.min(knn_tst_rmse)]
+
+# find overfitting, underfitting, and "best"" k
+fit_status = ifelse(k < best_k, "Over", ifelse(k == best_k, "Best", "Under"))
+
+# summarize results
+knn_results = data.frame(
+  k,
+  round(knn_trn_rmse, 2),
+  round(knn_tst_rmse, 2),
+  fit_status
+)
+colnames(knn_results) = c("k", "Train RMSE", "Test RMSE", "Fit?")
+
+# display results
+knitr::kable(knn_results, escape = FALSE, booktabs = TRUE)

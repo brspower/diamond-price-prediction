@@ -6,6 +6,7 @@ library(e1071)
 library(FNN) 
 library(gmodels) 
 library(psych)
+library(knitr)
 
 
 diamonds <- read.csv("diamonds.csv")
@@ -66,14 +67,14 @@ make_knn_pred = function(k = 1, training, predicting, price_outcome_test, price_
   rmse(predicted = pred, actual = act)
 }
 
-k = c(1, 5, 10, 25, 50, 250)
+k = c(1, 5, 10, 25, 50, 100)
 
 # get requested train RMSEs
 knn_trn_rmse = sapply(k, make_knn_pred, 
                       training = reg_pred_train, 
                       predicting = reg_pred_train,
                       price_outcome_train = price_outcome_train,
-                      price_outcome_test = price_outcome_test)
+                      price_outcome_test = price_outcome_train)
 # get requested test RMSEs
 knn_tst_rmse = sapply(k, make_knn_pred, 
                             training = reg_pred_train, 
@@ -90,11 +91,13 @@ fit_status = ifelse(k < best_k, "Over", ifelse(k == best_k, "Best", "Under"))
 # summarize results
 knn_results = data.frame(
   k,
-  round(knn_trn_rmse, 2),
   round(knn_tst_rmse, 2),
   fit_status
 )
-colnames(knn_results) = c("k", "Train RMSE", "Test RMSE", "Fit?")
+
+otherResults <- knn_results %>% select(k)
+
+colnames(knn_results) = c("k", "Test RMSE", "Fit?")
 
 # display results
-knitr::kable(knn_results, escape = FALSE, booktabs = TRUE)
+result <- knitr::kable(knn_results, escape = FALSE, booktabs = TRUE)
